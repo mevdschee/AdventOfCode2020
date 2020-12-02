@@ -7,7 +7,8 @@ fn main() {
     let file = File::open("input").expect("cannot open file");
     let file = BufReader::new(file);
     for line in file.lines() {
-        let num: i32 = line.ok().unwrap().parse().unwrap();
+        let s:str = line.ok().unwrap();
+        let num: i32 = s.parse().unwrap();
         for v in &vec {
             if v+num==2020 {
                 println!("{}+{}=2020",v,num);
