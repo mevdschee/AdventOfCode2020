@@ -9,12 +9,14 @@ fn main() {
     for line in file.lines() {
         let s: String = line.ok().unwrap();
         let num: i32 = s.parse().unwrap();
-        for v in &vec {
-            if v + num == 2020 {
-                println!("{}+{}=2020", v, num);
-                println!("{}*{}={}", v, num, v * num);
+        vec.push(num);
+    }
+    for num1 in &vec {
+        for num2 in &vec {
+            if num1 + num2 == 2020 {
+                println!("{}+{}={}", num1, num2, num1 + num2);
+                println!("{}*{}={}", num1, num2, num1 * num2)
             }
         }
-        vec.push(num);
     }
 }
