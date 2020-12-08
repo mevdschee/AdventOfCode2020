@@ -10,9 +10,9 @@ fn main() {
     for line in file.lines() {
         let s = line.unwrap();
         let mut parts = s.split(" ");
-        let opcode: String = parts.next().unwrap().to_string();
+        let opcode = parts.next().unwrap().to_string();
         let argument = parts.next().unwrap();
-        let argnumber: i32 = argument.parse().unwrap();
+        let argnumber = argument.parse().unwrap();
         code.push((opcode.clone(), argnumber));
     }
     for corrupt in 0..code.len() {
