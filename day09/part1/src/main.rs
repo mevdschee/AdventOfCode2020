@@ -14,7 +14,7 @@ fn main() {
         if i>=preamble {
             let mut found = false;
             for j in 0..preamble {
-                for k in j..preamble {
+                for k in j+1..preamble {
                     let numj = numbers[numbers.len()-1-j];
                     let numk = numbers[numbers.len()-1-k];
                     if numj+numk == number {
