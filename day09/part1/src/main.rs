@@ -14,10 +14,10 @@ fn main() {
         if i>=preamble {
             let mut found = false;
             for j in 0..preamble {
-                for k in 0..preamble {
+                for k in j..preamble {
                     let numj = numbers[numbers.len()-1-j];
                     let numk = numbers[numbers.len()-1-k];
-                    if j!=k && numj+numk == number {
+                    if numj+numk == number {
                         found = true;
                     }
                     if found {

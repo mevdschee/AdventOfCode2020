@@ -14,10 +14,10 @@ fn main() {
         if i>=preamble {
             let mut found = false;
             for j in 0..preamble {
-                for k in 0..preamble {
+                for k in j..preamble {
                     let numj = numbers[numbers.len()-1-j];
                     let numk = numbers[numbers.len()-1-k];
-                    if j!=k && numj+numk == number {
+                    if numj+numk == number {
                         found = true;
                     }
                     if found {
@@ -35,26 +35,18 @@ fn main() {
         numbers.push(number);
         i += 1;
     }
-    let mut found = false;
-    for o in 0..numbers.len() {
-        for l in 0..(numbers.len()-o) {
-            let sum: i64 = numbers[o..o+l].iter().sum();
-            if sum > number {
-                break;
-            }
-            if sum == number {
-                let max = numbers[o..o+l].iter().max().unwrap();
-                let min = numbers[o..o+l].iter().min().unwrap();
-                number = min + max;
-                found = true;
-            }
-            if found {
-                break;
-            }
+    let mut begin = 0;
+    let mut end= 0;
+    let mut sum = 0;
+    while sum != number {
+        if sum > number {
+            begin += 1;
+        } else if sum<number {
+            end += 1;
         }
-        if found {
-            break;
-        }
+        sum = numbers[begin..end].iter().sum();
     }
-    println!("{}",number);
+    let max = numbers[begin..end].iter().max().unwrap();
+    let min = numbers[begin..end].iter().min().unwrap();
+    println!("{}", min + max);
 }
