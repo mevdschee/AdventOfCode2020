@@ -21,7 +21,7 @@ fn main() {
     let size = max(maxx,maxy)+1;
     let mut changed = true;
     while changed {
-        let mut next = seats.clone();
+        let mut next = HashMap::<(i32,i32),bool>::new();
         changed = false;
         for x in 0..size {
             for y in 0..size {
@@ -33,8 +33,13 @@ fn main() {
                                 continue;
                             }
                             for m in 1..size {
-                                if seats.contains_key(&(x+dx*m,y+dy*m)) {
-                                    if seats[&(x+dx*m,y+dy*m)] {
+                                let nx = x+dx*m;
+                                let ny = y+dy*m;
+                                if nx<0 || ny<0 || nx>=size || ny >=size {
+                                    break;
+                                }
+                                if seats.contains_key(&(nx,ny)) {
+                                    if seats[&(nx,ny)] {
                                         occupied += 1;
                                     }
                                     break;

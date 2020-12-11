@@ -21,7 +21,7 @@ fn main() {
     let size = max(maxx,maxy)+1;
     let mut changed = true;
     while changed {
-        let mut next = seats.clone();
+        let mut next = HashMap::<(i32,i32),bool>::new();
         changed = false;
         for x in 0..size {
             for y in 0..size {
