@@ -23,54 +23,45 @@ fn main() {
     while changed {
         let mut next = HashMap::<(i32,i32),bool>::new();
         changed = false;
-        for x in 0..size {
-            for y in 0..size {
-                if seats.contains_key(&(x,y)) {
-                    let mut occupied = 0;
-                    for dx in -1..=1 {
-                        for dy in -1..=1 {
-                            if dx==0 && dy ==0 {
-                                continue;
+        for (key,value) in &seats {
+            let (x,y) = key;
+            let mut occupied = 0;
+            for dx in -1..=1 {
+                for dy in -1..=1 {
+                    if dx==0 && dy ==0 {
+                        continue;
+                    }
+                    for m in 1..size {
+                        let nx = x+dx*m;
+                        let ny = y+dy*m;
+                        if nx<0 || ny<0 || nx>=size || ny >=size {
+                            break;
+                        }
+                        if seats.contains_key(&(nx,ny)) {
+                            if seats[&(nx,ny)] {
+                                occupied += 1;
                             }
-                            for m in 1..size {
-                                let nx = x+dx*m;
-                                let ny = y+dy*m;
-                                if nx<0 || ny<0 || nx>=size || ny >=size {
-                                    break;
-                                }
-                                if seats.contains_key(&(nx,ny)) {
-                                    if seats[&(nx,ny)] {
-                                        occupied += 1;
-                                    }
-                                    break;
-                                }
-                            }
+                            break;
                         }
                     }
-                    let mut value = seats[&(x,y)];
-                    if seats[&(x,y)] {
-                        if occupied>=5 {
-                            value = false;
-                            changed = true;
-                        }
-                    } else {
-                        if occupied==0 {
-                            value = true;
-                            changed = true;
-                        }
-                    }
-                    next.insert((x,y), value);
-                    
                 }
             }
+            let mut nextvalue = *value;
+            if *value {
+                if occupied>=5 {
+                    nextvalue = false;
+                    changed = true;
+                }
+            } else {
+                if occupied==0 {
+                    nextvalue = true;
+                    changed = true;
+                }
+            }
+            next.insert(*key, nextvalue);
+                    
         }
         seats = next;
     }
-    let mut i = 0;
-    for k in seats.keys() {
-        if seats[k] {
-            i+=1;
-        }
-    }
-    println!("{}",i);
+    println!("{}",seats.values().filter(|&n|*n).count());
 }
