@@ -14,6 +14,7 @@ fn main() {
             ("L",90) | ("R",270) => (direction.1,-direction.0),
             ("R",90) | ("L",270) => (-direction.1,direction.0),
             ("L",180) | ("R",180) => (-direction.0,-direction.1),
+            ("L",_) | ("R",_) => panic!("Unexpected angle: {}",n),
             _ => direction
         };
         position = match letter {

@@ -14,6 +14,7 @@ fn main() {
             ("L",90) | ("R",270) => (waypoint.1,-waypoint.0),
             ("R",90) | ("L",270) => (-waypoint.1,waypoint.0),
             ("L",180) | ("R",180) => (-waypoint.0,-waypoint.1),
+            ("L",_) | ("R",_) => panic!("Unexpected angle: {}",n),
             ("N",_) => (waypoint.0,waypoint.1-n),
             ("S",_) => (waypoint.0,waypoint.1+n),
             ("E",_) => (waypoint.0+n,waypoint.1),
