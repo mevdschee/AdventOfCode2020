@@ -29,7 +29,7 @@ fn main() {
             } else {
                 let other = HashSet::from_iter(ingredients.to_vec());
                 let intersect = allergen_ingredients[&a].intersection(&other);
-                let set = HashSet::from_iter(intersect.map(|x| x.to_string()));
+                let set = HashSet::from_iter(intersect.cloned());
                 allergen_ingredients.insert(a, set);
             }
         }
@@ -39,11 +39,12 @@ fn main() {
         }
     }
     // evaluate
-    let other = allergen_ingredients
-        .values()
-        .fold(HashSet::new(), |a, x| a.into_iter().chain(x).collect());
-    let set: HashSet<&String> = ingredient_counts.keys().collect();
-    let intersect = set.difference(&other);
-    let sum = intersect.fold(0, |a, x| a + ingredient_counts.get(x.to_owned()).unwrap());
+    let values = allergen_ingredients.values();
+    let other: HashSet<String> = values.fold(HashSet::new(), |a, x| {
+        HashSet::from_iter(a.union(x).cloned())
+    });
+    let set: HashSet<String> = ingredient_counts.keys().cloned().collect();
+    let difference = set.difference(&other);
+    let sum = difference.fold(0, |a, x| a + ingredient_counts.get(x).unwrap());
     println!("{:?}", sum);
 }
