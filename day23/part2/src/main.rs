@@ -42,5 +42,6 @@ fn main() {
     }
     let i1 = digits[&1];
     let i2 = digits[&i1];
-    print!("{}",(i1 as i64) * (i2 as i64));
+    let sum:i64 = (i1 * i2).into();
+    print!("{}", sum);
 }
