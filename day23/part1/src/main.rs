@@ -36,10 +36,11 @@ fn main() {
         let mc3 = digits.get_mut(&c3).unwrap();
         *mc3 = i1;
     }
+    let mut result = vec![];
     let mut i = 1;
     for _ in 0..8 {
         i = digits[&i];
-        print!("{}",i);
+        result.push(i.to_string());
     }
-    println!("");
+    println!("{}",result.join(""));
 }
