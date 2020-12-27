@@ -20,16 +20,11 @@ fn main() {
         let c2 = digits.get(&c1).unwrap().to_owned();
         let c3 = digits.get(&c2).unwrap().to_owned();
         let c4 = digits.get(&c3).unwrap().to_owned();
-        let mut i = c-1;
-        if i<=0 {
-            i=9;
-        }
+        let sanitize = |i| match i { i if i<=0 => 9, _ => i };
+        let mut i = sanitize(c-1);
         let taken = vec![c1,c2,c3];
         while taken.contains(&i) {
-            i -= 1;
-            if i<=0 {
-                i=9;
-            }
+            i = sanitize(i-1);
         }
         let i1 = digits.get(&i).unwrap().to_owned();
         let m0 = digits.get_mut(&0).unwrap();
