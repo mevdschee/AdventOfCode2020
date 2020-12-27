@@ -123,6 +123,17 @@ fn main() {
         images.push(image_flipped);
         images.push(image_reverse_flipped);
 
+        let images = vec![
+            images[0].clone(), // 0 normal
+            images[6].clone(), // 90 clock-wise
+            images[3].clone(), // 180 upside down
+            images[5].clone(), // 270 clock-wise
+            images[1].clone(), // 0 mirror (horizontally)
+            images[4].clone(), // 90 clock-wise mirror
+            images[2].clone(), // 180 upside down mirror
+            images[7].clone(), // 270 clock-wise mirror
+        ];
+
         tiles.insert(number, images);
     }
     // evaluate
