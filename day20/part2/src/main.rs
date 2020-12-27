@@ -8,22 +8,20 @@ fn print_tile(tiles: &HashMap<i32, Vec<Vec<i32>>>, tile: i32, rotation: usize) {
     }
 }
 
-fn tile_connects(tiles: &HashMap<i32, Vec<Vec<i32>>>, tile0: i32, tile1: i32) -> i32 {
+fn tile_connects(tiles: &HashMap<i32, Vec<Vec<i32>>>, tile0: i32, tile1: i32) -> bool {
     let mut found = false;
-    let mut i = 0;
     for side0 in &tiles[&tile0] {
         for side1 in &tiles[&tile1] {
             if side0[0 as usize] == side1[0 as usize] {
                 found = true;
                 break;
             }
-            i += 1;
         }
         if found {
             break;
         }
     }
-    return i;
+    return found;
 }
 
 fn find_next_tile(
@@ -44,8 +42,8 @@ fn find_next_tile(
         if image.contains(tile) {
             continue;
         }
-        if y == 0 || tile_connects(tiles, *tile, image[(y - 1) * 12 + x]) > 0 {
-            if x == 0 || tile_connects(tiles, *tile, image[y * 12 + x - 1]) > 0 {
+        if y == 0 || tile_connects(tiles, *tile, image[(y - 1) * 12 + x]) {
+            if x == 0 || tile_connects(tiles, *tile, image[y * 12 + x - 1]) {
                 return *tile;
             }
         }
