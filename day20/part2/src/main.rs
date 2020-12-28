@@ -161,7 +161,7 @@ fn main() {
     let image = &scores[&4][0];
     for i in 0..8 {
         if connects.contains_key(&(image,i)) {
-            println!("{:?}->{:?}",(image,i),connects[&(image,i)]);
+            println!("{:?} -> {:?}",(image,i),connects[&(image,i)]);
         }
     }
     // build image
