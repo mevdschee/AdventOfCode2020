@@ -31,7 +31,7 @@ fn find_next_tile(
 ) -> i32 {
     let y = image.len() / 12;
     let x = image.len() % 12;
-    let mut pool = 12;
+    let mut pool = 4;
     if y > 0 && y < 11 {
         pool += 2;
     }
@@ -136,26 +136,32 @@ fn main() {
     }
     // evaluate
     let mut scores = HashMap::new();
-    let mut minimum = -1;
-    for (number, images) in &tiles {
+    let mut connects = HashMap::new();
+    for (number0, images0) in &tiles {
         let mut score = 0;
-        for image in images {
-            let border = image[0];
-            for (_number, images) in &tiles {
-                for image in images {
-                    if image[0] == border {
+        for (orientation0,image0) in images0.iter().enumerate() {
+            for (number1, images1) in &tiles {
+                if number0 == number1 {
+                    continue;
+                }
+                for (orientation1,image1) in images1.iter().enumerate() {
+                    if image0[0] == image1[0] {
                         score += 1;
+                        connects.insert((number0,orientation0),(number1,orientation1));
                     }
                 }
             }
         }
-        if minimum == -1 || score < minimum {
-            minimum = score;
-        }
         if !scores.contains_key(&score) {
-            scores.insert(score, vec![*number]);
+            scores.insert(score, vec![*number0]);
         } else {
-            scores.get_mut(&score).unwrap().push(*number);
+            scores.get_mut(&score).unwrap().push(*number0);
+        }
+    }
+    let image = &scores[&4][0];
+    for i in 0..8 {
+        if connects.contains_key(&(image,i)) {
+            println!("{:?}",connects[&(image,i)]);
         }
     }
     // build image
@@ -163,9 +169,9 @@ fn main() {
     for _ in 0..144 {
         image.push(find_next_tile(&tiles, &image, &scores));
     }
-    for i in 0..2 {
+    /*for i in 0..2 {
         println!("{}", image[i]);
         print_tile(&tiles, image[i], 0);
-    }
-    //println!("{:?}", image);
+    }*/
+    println!("{:?}", image);
 }

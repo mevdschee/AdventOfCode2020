@@ -77,13 +77,15 @@ fn main() {
     // evaluate
     let mut scores = HashMap::new();
     let mut minimum = -1;
-    for (number, images) in &tiles {
+    for (number0, images0) in &tiles {
         let mut score = 0;
-        for image in images {
-            let border = image[0];
-            for (_number, images) in &tiles {
-                for image in images {
-                    if image[0] == border {
+        for image0 in images0 {
+            for (number1, images1) in &tiles {
+                if number0 == number1 {
+                    continue;
+                }
+                for image1 in images1 {
+                    if image1[0] == image0[0] {
                         score += 1;
                     }
                 }
@@ -93,9 +95,9 @@ fn main() {
             minimum = score;
         }
         if !scores.contains_key(&score) {
-            scores.insert(score, vec![number]);
+            scores.insert(score, vec![number0]);
         } else {
-            scores.get_mut(&score).unwrap().push(number);
+            scores.get_mut(&score).unwrap().push(number0);
         }
     }
     let i = scores[&minimum].iter().fold(1, |sum, val| sum * *val);
