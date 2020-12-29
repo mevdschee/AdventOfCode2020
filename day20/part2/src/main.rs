@@ -172,112 +172,57 @@ fn main() {
             scores.get_mut(&score).unwrap().push(*number0);
         }
     }
-    //println!("{:?}",connects);
-    let image0 = scores[&4][0];
-    // first tile orientation
-    let mut rotate = 0;
-    while !connects.contains_key(&(image0, (rotate + 1) % 4))
-        || !connects.contains_key(&(image0, (rotate + 2) % 4))
-    {
-        rotate += 1;
-    }
     // build image
-    let mut image = vec![image0.to_owned()];
-    let mut rotations = vec![rotate];
-    print_tile(&tiles, image0, rotate);
-    while image.len() < 144 {
-        let y = image.len() / 12;
-        let x = image.len() % 12;
-        let direction;
-        let image0;
-        let rotate;
-        if x == 0 {
-            println!("{}", "first");
-            image0 = image[(y - 1) * 12 + x];
-            rotate = rotations[(y - 1) * 12 + x];
-            direction = 2;
-        } else {
-            image0 = image[y * 12 + x - 1];
-            rotate = rotations[y * 12 + x - 1];
-            direction = 1;
+    let mut image = vec![];
+    let mut rotations = vec![];
+    for image0 in scores[&4].clone() {
+        // rotate first tile
+        let mut rotate = 0;
+        while !connects.contains_key(&(image0, (rotate + 1) % 4))
+            || !connects.contains_key(&(image0, (rotate + 2) % 4))
+        {
+            rotate += 1;
         }
-        let orientation0 = (rotate + direction) % 8;
-        let (image1, orientation1) = connects[&(image0, orientation0)];
-        println!(
-            "({},{}) {:?} -> {:?}",
-            y,
-            x,
-            (image0, orientation0),
-            (image1, orientation1)
-        );
-        let next_rotate = (rotate + 8 - orientation0 + orientation1
-            + match orientation1%2 { 1 => 4, _ => 6,}) % 8;
-                // (0, 1) => 3,
-                // (0, 2) => 4,
-                // (0, 3) => 1,
-                // (0, 4) => 6,
-                // (0, 7) => 5,
-                // (1, 0) => 5, // (((8-1)+0)+6)%8 == 5 
-                // (1, 1) => 4, // (((8-1)+1)+4)%8 == 4 
-                // (1, 2) => 7, // (((8-1)+2)+6)%8 == 7 
-                // (1, 3) => 6, // (((8-1)+3)+4)%8 == 6
-                // (1, 5) => 0, // (((8-1)+5)+4)%8 == 0
-                // (1, 6) => 3, // (((8-1)+6)+6)%8 == 3 
-                // (1, 7) => 2, // (((8-1)+7)+4)%8 == 2 
-                // (2, 0) => 4,
-                // (2, 1) => 3,
-                // (2, 3) => 3,
-                // (2, 4) => 0,
-                // (2, 5) => 7,
-                // (2, 6) => 2,
-                // (2, 7) => 7,
-                // (3, 0) => 3, // (((8-3)+0)+6)%8 == 3 
-                // (3, 1) => 2,
-                // (3, 2) => 5,
-                // (3, 3) => 4, // (((8-3)+3)+4)%8 == 4 
-                // (3, 6) => 1,
-                // (3, 7) => 0,
-                // (4, 0) => 6,
-                // (4, 2) => 0,
-                // (4, 3) => 5,
-                // (4, 5) => 3,
-                // (4, 7) => 1,
-                // (5, 1) => 6,
-                // (5, 2) => 3,
-                // (5, 5) => 4, // (((8-5)+5)+4)%8 == 4
-                // (5, 6) => 7,
-                // (5, 7) => 6,
-                // (6, 1) => 7,
-                // (6, 2) => 2,
-                // (6, 3) => 1,
-                // (6, 5) => 3,
-                // (6, 7) => 5,
-                // (7, 4) => 3, // (((8-7)+4)+6)%8 == 3
-                // (7, 5) => 2,
-                // (7, 6) => 5,
-                // (7, 7) => 4,
-                // _ => {
-                //     print_tile(&tiles, image0, rotate);
-                //     print_tile(&tiles, image1, (rotate + 0) % 8);
-                //     panic!("Unknown combination: {:?}", (orientation0, orientation1))
-                // }
-        print_tile(&tiles, image1, next_rotate);
-        image.push(image1.to_owned());
-        rotations.push(next_rotate);
+        image = vec![image0.to_owned()];
+        rotations = vec![rotate];
+        // add all other tiles
+        while image.len() < 144 {
+            let y = image.len() / 12;
+            let x = image.len() % 12;
+            let direction;
+            let image0;
+            let rotate;
+            if x == 0 {
+                image0 = image[(y - 1) * 12 + x];
+                rotate = rotations[(y - 1) * 12 + x];
+                direction = 2;
+            } else {
+                image0 = image[y * 12 + x - 1];
+                rotate = rotations[y * 12 + x - 1];
+                direction = 1;
+            }
+            let orientation0 = (rotate + direction) % 8;
+            if !connects.contains_key(&(image0, orientation0)) {
+                break;
+            }
+            let (image1, orientation1) = connects[&(image0, orientation0)];
+            //println!(
+            //    "({},{}) {:?} -> {:?}",
+            //    y,
+            //    x,
+            //    (image0, orientation0),
+            //    (image1, orientation1)
+            //);
+            let next_rotate = (rotate + 8 - orientation0 + orientation1
+                + match orientation1%2 { 1 => 4, _ => 6,}) % 8;
+            //print_tile(&tiles, image1, next_rotate);
+            image.push(image1.to_owned());
+            rotations.push(next_rotate);
+        }
+        if image.len() == 144 {
+            break;
+        }
     }
-
-    //let mut next_rotate = rotate + (8 - orientation0) + orientation1 + 6;
-    //if ((8 - orientation0) + orientation1)%2==0 {
-    //    next_rotate += 8;
-    //} else {
-    //    next_rotate += 6;
-    //}
-    //print_tile(&tiles, *image0, rotate);
-    //print_tile(&tiles, *image1, next_rotate);
-    //}
-    /*for i in 0..2 {
-        println!("{}", image[i]);
-        print_tile(&tiles, image[i], 0);
-    }*/
-    //println!("{:?}", image);
+    println!("{:?}", image);
+    println!("{:?}", rotations);
 }
