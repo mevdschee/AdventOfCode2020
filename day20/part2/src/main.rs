@@ -2,58 +2,26 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 
-fn print_tile(tiles: &HashMap<i32, Vec<Vec<i32>>>, tile: i32, rotation: usize) {
-    println!("{} {}", tile, rotation);
-    for n in &tiles[&tile][rotation] {
-        let s = format!("{:#012b}", n);
+// fn print_tile(tiles: &HashMap<i32, Vec<Vec<i32>>>, tile: i32, rotation: usize) {
+//     println!("{} {}", tile, rotation);
+//     for n in &tiles[&tile][rotation] {
+//         let s = format!("{:#012b}", n);
+//         println!(
+//             "{}",
+//             s[2..].to_string().replace("0", "..").replace("1", "()")
+//         );
+//     }
+// }
+
+
+fn print_bitmap(bitmap: &Vec<i128>) {
+    for n in bitmap {
+        let s = format!("{:#098b}", n);
         println!(
             "{}",
-            s[2..].to_string().replace("0", "..").replace("1", "()")
+            s[2..].to_string().replace("0", ".").replace("1", "#")
         );
     }
-}
-
-fn tile_connects(tiles: &HashMap<i32, Vec<Vec<i32>>>, tile0: i32, tile1: i32) -> bool {
-    let mut found = false;
-    for side0 in &tiles[&tile0] {
-        for side1 in &tiles[&tile1] {
-            if side0[0 as usize] == side1[0 as usize] {
-                found = true;
-                break;
-            }
-        }
-        if found {
-            break;
-        }
-    }
-    return found;
-}
-
-fn find_next_tile(
-    tiles: &HashMap<i32, Vec<Vec<i32>>>,
-    image: &Vec<i32>,
-    scores: &HashMap<i32, Vec<i32>>,
-) -> i32 {
-    let y = image.len() / 12;
-    let x = image.len() % 12;
-    let mut pool = 4;
-    if y > 0 && y < 11 {
-        pool += 2;
-    }
-    if x > 0 && x < 11 {
-        pool += 2;
-    }
-    for tile in &scores[&pool] {
-        if image.contains(tile) {
-            continue;
-        }
-        if y == 0 || tile_connects(tiles, *tile, image[(y - 1) * 12 + x]) {
-            if x == 0 || tile_connects(tiles, *tile, image[y * 12 + x - 1]) {
-                return *tile;
-            }
-        }
-    }
-    return 0;
 }
 
 fn main() {
@@ -213,8 +181,13 @@ fn main() {
             //    (image0, orientation0),
             //    (image1, orientation1)
             //);
-            let next_rotate = (rotate + 8 - orientation0 + orientation1
-                + match orientation1%2 { 1 => 4, _ => 6,}) % 8;
+            let next_rotate = (rotate + 8 - orientation0
+                + orientation1
+                + match orientation1 % 2 {
+                    1 => 4,
+                    _ => 6,
+                })
+                % 8;
             //print_tile(&tiles, image1, next_rotate);
             image.push(image1.to_owned());
             rotations.push(next_rotate);
@@ -223,6 +196,20 @@ fn main() {
             break;
         }
     }
+    let mut bitmap = vec![0 as i128; 96];
+    for y in 0..12 {
+        for x in 0..12 {
+            let tile = image[y * 12 + x];
+            let rotation = rotations[y * 12 + x];
+            let numbers = tiles[&tile][rotation].to_owned();
+            for l in 0..8 {
+                let number = numbers[1+l] as i128;
+                let bits = (number >> 1) & 0b11111111;
+                bitmap[y * 8 + l] |= bits << (11 - x) * 8;
+            }
+        }
+    }
     println!("{:?}", image);
     println!("{:?}", rotations);
+    print_bitmap(&bitmap);
 }
