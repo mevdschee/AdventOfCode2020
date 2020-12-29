@@ -191,8 +191,8 @@ fn main() {
     for image0 in scores[&4].clone() {
         // rotate first tile
         let mut rotate = 0;
-        while !connects.contains_key(&(image0, (rotate + 1) % 4))
-            || !connects.contains_key(&(image0, (rotate + 2) % 4))
+        while !connects.contains_key(&(image0, (rotate + 1) % 8))
+            || !connects.contains_key(&(image0, (rotate + 2) % 8))
         {
             rotate += 1;
         }
