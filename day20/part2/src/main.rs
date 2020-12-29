@@ -14,9 +14,16 @@ fn print_all_tiles(tiles: &HashMap<i32, Vec<Vec<i128>>>, image_tiles: &Vec<i32>,
                     "{}",
                     s[2..].to_string().replace("0", ".").replace("1", "#")
                 );
+                print!(" ");
             }
             println!("");
         }
+        for x in 0..12 {
+            let tile = image_tiles[y*12+x];
+            let rotation = rotations[y*12+x];
+            print!("{:#010} ", format!("{} ({})", tile, rotation));
+        }
+        println!("");
     }
 }
 
@@ -137,23 +144,18 @@ fn main() {
         // }
         // panic!("exit");
     }
-    // evaluate
+    // evaluate scores
     let mut scores = HashMap::new();
-    let mut connects = HashMap::new();
     for (number0, images0) in &tiles {
         let mut score = 0;
-        for (orientation0, image0) in images0.iter().enumerate() {
+        for image0 in images0 {
             for (number1, images1) in &tiles {
                 if number0 == number1 {
                     continue;
                 }
-                for (orientation1, image1) in images1.iter().enumerate() {
+                for image1 in images1 {
                     if image0[0] == image1[0] {
                         score += 1;
-                        connects.insert(
-                            (number0.to_owned(), orientation0),
-                            (number1.to_owned(), orientation1),
-                        );
                     }
                 }
             }
@@ -162,6 +164,25 @@ fn main() {
             scores.insert(score, vec![*number0]);
         } else {
             scores.get_mut(&score).unwrap().push(*number0);
+        }
+    }   
+    // evaluate connections
+    let mut connects = HashMap::new();
+    for (number0, images0) in &tiles {
+        for (orientation0, image0) in images0.iter().enumerate() {
+            for (number1, images1) in &tiles {
+                if number0 == number1 {
+                    continue;
+                }
+                for (orientation1, image1) in images1.iter().enumerate() {
+                    if image0[0] == image1[0] {
+                        connects.insert(
+                            (number0.to_owned(), orientation0),
+                            (number1.to_owned(), orientation1),
+                        );
+                    }
+                }
+            }
         }
     }
     // build image
@@ -220,8 +241,8 @@ fn main() {
             break;
         }
     }
-    println!("{:?}", image);
-    println!("{:?}", rotations);
+    //println!("{:?}", image);
+    //println!("{:?}", rotations);
     print_all_tiles(&tiles,&image,&rotations);
     // create bitmap
     let mut bitmap = vec![0 as i128; 96];
@@ -237,15 +258,14 @@ fn main() {
             }
         }
     }
+    //print_bitmap(&bitmaps[0]);
+    // create bitmaps
     let mut bitmap_lines = vec![];
     for n in bitmap.clone() {
         let s = format!("{:#098b}", n);
         bitmap_lines.push(s[2..].replace("0", ".").replace("1", "#"));
     }
     let bitmaps = image_lines_to_rotated_images(bitmap_lines);
-    print_bitmap(&bitmaps[0]);
-    // create bitmaps
-    
     // define sea monster
     let monster = vec![
         0b00000000000000000010, // ..................#.
