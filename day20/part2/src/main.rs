@@ -14,15 +14,15 @@ use std::io::Read;
 // }
 
 
-fn print_bitmap(bitmap: &Vec<i128>) {
-    for n in bitmap {
-        let s = format!("{:#098b}", n);
-        println!(
-            "{}",
-            s[2..].to_string().replace("0", ".").replace("1", "#")
-        );
-    }
-}
+// fn print_bitmap(bitmap: &Vec<i128>) {
+//     for n in bitmap {
+//         let s = format!("{:#098b}", n);
+//         println!(
+//             "{}",
+//             s[2..].to_string().replace("0", ".").replace("1", "#")
+//         );
+//     }
+// }
 
 fn main() {
     // state
@@ -196,6 +196,9 @@ fn main() {
             break;
         }
     }
+    //println!("{:?}", image);
+    //println!("{:?}", rotations);
+    // create bitmap
     let mut bitmap = vec![0 as i128; 96];
     for y in 0..12 {
         for x in 0..12 {
@@ -209,7 +212,60 @@ fn main() {
             }
         }
     }
-    println!("{:?}", image);
-    println!("{:?}", rotations);
-    print_bitmap(&bitmap);
+    // define sea monsters
+    let monsters = vec![
+        vec![
+            0b00000000000000000010, // ..................#.
+            0b10000110000110000111, // #....##....##....###
+            0b01001001001001001000, // .#..#..#..#..#..#...
+        ],
+        vec![
+            0b01001001001001001000, // .#..#..#..#..#..#...
+            0b10000110000110000111, // #....##....##....###
+            0b00000000000000000010, // ..................#.
+        ],
+        vec![
+            0b01000000000000000000, // .#..................
+            0b11100001100001100001, // ###....##....##....#
+            0b00010010010010010010, // ...#..#..#..#..#..#.
+        ],
+        vec![
+            0b00010010010010010010, // ...#..#..#..#..#..#.
+            0b11100001100001100001, // ###....##....##....#
+            0b01000000000000000000, // .#..................
+        ],
+    ];
+    // find monsters
+    let mut result = 0;
+    for m in monsters {
+        let mut matches = 0;
+        for y in 0..96-3 {
+            for x in 0..96-20 {
+                let mut lines = 0;
+                for l in 0..3 {
+                    let number = m[l] << (95-x);
+                    if bitmap[y+l] & number == number {
+                        lines+=1;
+                    }
+                }
+                if lines == 3 {
+                    matches+=1;
+                }
+            }
+        }
+        if matches>result {
+            result = matches;
+        }
+    }
+    // find roughness
+    let mut ones = 0;
+    for n in bitmap {
+        let s = format!("{:#098b}",n);
+        for c in s.to_string().chars() {
+            if c=='1' {
+                ones+=1;
+            }
+        }
+    }
+    println!("{}", ones - result*15);
 }
