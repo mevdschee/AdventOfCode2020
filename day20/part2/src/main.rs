@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::Read;
 
 fn print_all_tiles(tiles: &HashMap<i32, Vec<Vec<i128>>>, image_tiles: &Vec<i32>, rotations: &Vec<usize>) {
-    for y in 0..12 {
+    for y in 0..2 {
         for l in 0..10 {
             for x in 0..12 {
                 let tile = image_tiles[y*12+x];
@@ -178,18 +178,19 @@ fn main() {
                     if image0[0] == image1[0] {
                         connects.insert(
                             (number0.to_owned(), orientation0),
-                            (number1.to_owned(), orientation1),
+                            (number1.to_owned(), (orientation1+4)%8),
                         );
                     }
                 }
             }
         }
     }
-    // build image
     let mut image = vec![];
     let mut rotations = vec![];
+    // build image
     for image0 in scores[&4].clone() {
-        // rotate first tile
+            // rotate first tile
+        println!("NEW");
         let mut rotate = 0;
         while !connects.contains_key(&(image0, (rotate + 1) % 8))
             || !connects.contains_key(&(image0, (rotate + 2) % 8))
@@ -199,7 +200,7 @@ fn main() {
         image = vec![image0.to_owned()];
         rotations = vec![rotate];
         // add all other tiles
-        while image.len() < 144 {
+        while image.len() < 28 {
             let y = image.len() / 12;
             let x = image.len() % 12;
             let direction;
@@ -214,36 +215,49 @@ fn main() {
                 rotate = rotations[y * 12 + x - 1];
                 direction = 1;
             }
-            let orientation0 = (rotate + direction) % 8;
+            let orientation0 = (rotate + direction)%8;
             if !connects.contains_key(&(image0, orientation0)) {
                 break;
             }
             let (image1, orientation1) = connects[&(image0, orientation0)];
-            // println!(
-            //     "({},{}) {:?} -> {:?}",
-            //     y,
-            //     x,
-            //     (image0, orientation0),
-            //     (image1, orientation1)
-            // );
+            println!(
+                "({},{}) {:?} -> {:?}",
+                y,
+                x,
+                (image0, orientation0),
+                (image1, orientation1)
+            );
             let next_rotate = (rotate + 8 - orientation0
                 + orientation1
-                + match orientation1 % 2 {
-                    1 => 4,
-                    _ => 6,
+                + match (orientation0, orientation1) {
+                    (0,5) => 2,
+                    (1,3) => 4,
+                    (1,4) => 4,
+                    (1,6) => 4,
+                    (2,0) => 4,
+                    (2,5) => 6,
+                    (7,5) => 4,
+                    (7,1) => 4,
+                    //(1,4) => 4,
+                    _ => {
+                        print_tile(&tiles, image1, rotate);
+                        print_tile(&tiles, image1, (2+rotate)%8);
+                        panic!("unknown pattern: {:?}", (orientation0, orientation1))
+                    },
                 })
                 % 8;
-            //print_tile(&tiles, image1, next_rotate);
+            print_tile(&tiles, image1, next_rotate);
             image.push(image1.to_owned());
             rotations.push(next_rotate);
         }
-        if image.len() == 144 {
+        if image.len() == 28 {
             break;
         }
     }
     //println!("{:?}", image);
     //println!("{:?}", rotations);
-    print_all_tiles(&tiles,&image,&rotations);
+    //print_all_tiles(&tiles,&image,&rotations);
+    panic!("done");
     // create bitmap
     let mut bitmap = vec![0 as i128; 96];
     for y in 0..12 {
