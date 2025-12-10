@@ -2,121 +2,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 
-fn print_all_tiles(tiles: &HashMap<i32, Vec<Vec<i128>>>, image_tiles: &Vec<i32>, rotations: &Vec<usize>) {
-    for y in 0..2 {
-        for l in 0..10 {
-            for x in 0..12 {
-                let tile = image_tiles[y*12+x];
-                let rotation = rotations[y*12+x];
-                let n = tiles[&tile][rotation][l];
-                let s = format!("{:#012b}", n);
-                print!(
-                    "{}",
-                    s[2..].to_string().replace("0", ".").replace("1", "#")
-                );
-                print!(" ");
-            }
-            println!("");
-        }
-        for x in 0..12 {
-            let tile = image_tiles[y*12+x];
-            let rotation = rotations[y*12+x];
-            print!("{:#010} ", format!("{} ({})", tile, rotation));
-        }
-        println!("");
-    }
-}
-
-fn print_tile(tiles: &HashMap<i32, Vec<Vec<i128>>>, tile: i32, rotation: usize) {
-    println!("{} {}", tile, rotation);
-    for n in &tiles[&tile][rotation] {
-        let s = format!("{:#012b}", n);
-        println!(
-            "{}",
-            s[2..].to_string().replace("0", "..").replace("1", "()")
-        );
-    }
-}
-
-fn print_bitmap(bitmap: &Vec<i128>) {
-    for n in bitmap {
-        let s = format!("{:#098b}", n);
-        println!(
-            "{}",
-            s[2..].to_string().replace("0", ".").replace("1", "#")
-        );
-    }
-}
-
-fn image_lines_to_rotated_images(image_lines: Vec<String>) -> Vec<Vec<i128>>
-{
-    let size = image_lines.len();
-    let mut images = vec![];
-
-    let mut image = vec![];
-    let mut image_reverse = vec![];
-    for line in &image_lines {
-        let mut number = 0;
-        let mut number_reverse = 0;
-        for (i, c) in line.chars().enumerate() {
-            let bit = match c {
-                '#' => 1,
-                _ => 0,
-            };
-            number |= bit << size - 1 - i;
-            number_reverse |= bit << i;
-        }
-        image.push(number);
-        image_reverse.push(number_reverse);
-    }
-    let image_flipped: Vec<i128> = image.iter().rev().map(|n| n.to_owned()).collect();
-    let image_reverse_flipped: Vec<i128> =
-        image_reverse.iter().rev().map(|n| n.to_owned()).collect();
-
-    images.push(image);
-    images.push(image_reverse);
-    images.push(image_flipped);
-    images.push(image_reverse_flipped);
-
-    let mut image = vec![];
-    let mut image_reverse = vec![];
-    for col in 0..size {
-        let mut number = 0;
-        let mut number_reverse = 0;
-        for (i, line) in image_lines.iter().enumerate() {
-            let c = line.chars().skip(col).next().unwrap();
-            let bit = match c {
-                '#' => 1,
-                _ => 0,
-            };
-            number |= bit << size - 1 - i;
-            number_reverse |= bit << i;
-        }
-        image.push(number);
-        image_reverse.push(number_reverse);
-    }
-    let image_flipped: Vec<i128> = image.iter().rev().map(|n| n.to_owned()).collect();
-    let image_reverse_flipped: Vec<i128> =
-        image_reverse.iter().rev().map(|n| n.to_owned()).collect();
-
-    images.push(image);
-    images.push(image_reverse);
-    images.push(image_flipped);
-    images.push(image_reverse_flipped);
-
-    let images = vec![
-        images[0].clone(), // 0 => 0 normal
-        images[6].clone(), // 1 => 90 counter-clock-wise
-        images[3].clone(), // 2 => 180 upside down
-        images[5].clone(), // 3 => 270 counter-clock-wise
-        images[1].clone(), // 4 => 0 mirror (around vertical axis)
-        images[4].clone(), // 5 => 90 counter-clock-wise mirror
-        images[2].clone(), // 6 => 180 upside down mirror
-        images[7].clone(), // 7 => 270 counter-clock-wise mirror
-    ];
-    return images;
-}
-
 fn main() {
     // state
     let mut tiles = HashMap::new();
@@ -127,24 +12,88 @@ fn main() {
     for tile in content.trim().split("\n\n") {
         let mut parts = tile.trim().split(":");
         let header = parts.next().unwrap();
-        let number: i32 = header[5..].parse().unwrap();
+        let number: i64 = header[5..].parse().unwrap();
         let lines = parts.next().unwrap().trim().split("\n");
         let mut image_lines = vec![];
         for line in lines {
-            image_lines.push(line.to_string());
+            image_lines.push(line);
         }
+        let size = image_lines.len();
+        let mut images = vec![];
 
-        let images = image_lines_to_rotated_images(image_lines);
+        let mut image = vec![];
+        let mut image_reverse = vec![];
+        for line in &image_lines {
+            let mut number = 0;
+            let mut number_reverse = 0;
+            for (i, c) in line.chars().enumerate() {
+                let bit = match c {
+                    '#' => 1,
+                    _ => 0,
+                };
+                number |= bit << size - 1 - i;
+                number_reverse |= bit << i;
+            }
+            image.push(number);
+            image_reverse.push(number_reverse);
+        }
+        let image_flipped: Vec<i32> = image.iter().rev().map(|n| n.to_owned()).collect();
+        let image_reverse_flipped: Vec<i32> =
+            image_reverse.iter().rev().map(|n| n.to_owned()).collect();
+
+        images.push(image);
+        images.push(image_reverse);
+        images.push(image_flipped);
+        images.push(image_reverse_flipped);
+
+        let mut image = vec![];
+        let mut image_reverse = vec![];
+        for col in 0..size {
+            let mut number = 0;
+            let mut number_reverse = 0;
+            for (i, line) in image_lines.iter().enumerate() {
+                let c = line.chars().skip(col).next().unwrap();
+                let bit = match c {
+                    '#' => 1,
+                    _ => 0,
+                };
+                number |= bit << size - 1 - i;
+                number_reverse |= bit << i;
+            }
+            image.push(number);
+            image_reverse.push(number_reverse);
+        }
+        let image_flipped: Vec<i32> = image.iter().rev().map(|n| n.to_owned()).collect();
+        let image_reverse_flipped: Vec<i32> =
+            image_reverse.iter().rev().map(|n| n.to_owned()).collect();
+
+        images.push(image);
+        images.push(image_reverse);
+        images.push(image_flipped);
+        images.push(image_reverse_flipped);
 
         tiles.insert(number, images);
-        // for i in 0..8{
-        //     print_tile(&tiles,number,i);
-        //     print_tile(&tiles,number,(i+6)%8);
-        //     println!("");
-        // }
-        // panic!("exit");
     }
-    // evaluate scores
+    // evaluate connections
+    let mut connects = HashMap::new();
+    for (number0, images0) in &tiles {
+        for (orientation0, image0) in images0.iter().enumerate() {
+            for (number1, images1) in &tiles {
+                if number0 == number1 {
+                    continue;
+                }
+                for (orientation1, image1) in images1.iter().enumerate() {
+                    if image0[image0.len() - 1] == image1[0] {
+                        connects.insert(
+                            (*number0, orientation0),
+                            (*number1, orientation1),
+                        );
+                    }
+                }
+            }
+        }
+    }
+    // find corner tiles
     let mut scores = HashMap::new();
     for (number0, images0) in &tiles {
         let mut score = 0;
@@ -165,160 +114,183 @@ fn main() {
         } else {
             scores.get_mut(&score).unwrap().push(*number0);
         }
-    }   
-    // evaluate connections
-    let mut connects = HashMap::new();
-    for (number0, images0) in &tiles {
-        for (orientation0, image0) in images0.iter().enumerate() {
-            for (number1, images1) in &tiles {
-                if number0 == number1 {
-                    continue;
-                }
-                for (orientation1, image1) in images1.iter().enumerate() {
-                    if image0[0] == image1[0] {
-                        connects.insert(
-                            (number0.to_owned(), orientation0),
-                            (number1.to_owned(), (orientation1+4)%8),
-                        );
+    }
+    // build image grid
+    let grid_size = (tiles.len() as f64).sqrt() as usize;
+    let mut placed = vec![];
+    let mut orientations = vec![];
+    let mut used = vec![false; tiles.len()];
+    let tile_ids: Vec<i64> = tiles.keys().copied().collect();
+    
+    fn try_place(
+        row: usize,
+        col: usize,
+        grid_size: usize,
+        placed: &mut Vec<i64>,
+        orientations: &mut Vec<usize>,
+        used: &mut Vec<bool>,
+        tile_ids: &Vec<i64>,
+        tiles: &HashMap<i64, Vec<Vec<i32>>>,
+        connects: &HashMap<(i64, usize), (i64, usize)>,
+    ) -> bool {
+        if row == grid_size {
+            return true;
+        }
+        let (next_row, next_col) = if col == grid_size - 1 {
+            (row + 1, 0)
+        } else {
+            (row, col + 1)
+        };
+        
+        for i in 0..tile_ids.len() {
+            if used[i] {
+                continue;
+            }
+            let tile_id = tile_ids[i];
+            
+            for orientation in 0..8 {
+                let mut fits = true;
+                
+                if row > 0 {
+                    let above_idx = (row - 1) * grid_size + col;
+                    let above_id = placed[above_idx];
+                    let above_orient = orientations[above_idx];
+                    if !connects.contains_key(&(above_id, above_orient)) {
+                        fits = false;
+                    } else {
+                        let (expected_id, expected_orient) = connects[&(above_id, above_orient)];
+                        if expected_id != tile_id || expected_orient != orientation {
+                            fits = false;
+                        }
                     }
                 }
+                
+                if col > 0 {
+                    let left_idx = row * grid_size + col - 1;
+                    let left_id = placed[left_idx];
+                    let left_orient = orientations[left_idx];
+                    let left_image = &tiles[&left_id][left_orient];
+                    let curr_image = &tiles[&tile_id][orientation];
+                    
+                    let mut left_edge = vec![];
+                    let mut right_edge = vec![];
+                    for j in 0..left_image.len() {
+                        left_edge.push(left_image[j] & 1);
+                        right_edge.push((curr_image[j] >> (left_image.len() - 1)) & 1);
+                    }
+                    if left_edge != right_edge {
+                        fits = false;
+                    }
+                }
+                
+                if fits {
+                    placed.push(tile_id);
+                    orientations.push(orientation);
+                    used[i] = true;
+                    
+                    if try_place(next_row, next_col, grid_size, placed, orientations, used, 
+                                 tile_ids, tiles, connects) {
+                        return true;
+                    }
+                    
+                    placed.pop();
+                    orientations.pop();
+                    used[i] = false;
+                }
+            }
+        }
+        false
+    }
+    
+    try_place(0, 0, grid_size, &mut placed, &mut orientations, &mut used,
+              &tile_ids, &tiles, &connects);
+    
+    // create bitmap (96x96)
+    let tile_size = 10;
+    let inner_size = tile_size - 2;
+    let bitmap_size = grid_size * inner_size;
+    let mut bitmap = vec![0u128; bitmap_size];
+    
+    for y in 0..grid_size {
+        for x in 0..grid_size {
+            let tile_id = placed[y * grid_size + x];
+            let orientation = orientations[y * grid_size + x];
+            let tile_image = &tiles[&tile_id][orientation];
+            
+            for row in 1..tile_size - 1 {
+                let bits = (tile_image[row] >> 1) & 0xFF;
+                let bitmap_row = y * inner_size + row - 1;
+                bitmap[bitmap_row] |= (bits as u128) << ((grid_size - 1 - x) * inner_size);
             }
         }
     }
-    let mut image = vec![];
-    let mut rotations = vec![];
-    // build image
-    for image0 in scores[&4].clone() {
-            // rotate first tile
-        println!("NEW");
-        let mut rotate = 0;
-        while !connects.contains_key(&(image0, (rotate + 1) % 8))
-            || !connects.contains_key(&(image0, (rotate + 2) % 8))
-        {
-            rotate += 1;
-        }
-        image = vec![image0.to_owned()];
-        rotations = vec![rotate];
-        // add all other tiles
-        while image.len() < 28 {
-            let y = image.len() / 12;
-            let x = image.len() % 12;
-            let direction;
-            let image0;
-            let rotate;
-            if x == 0 {
-                image0 = image[(y - 1) * 12 + x];
-                rotate = rotations[(y - 1) * 12 + x];
-                direction = 2;
-            } else {
-                image0 = image[y * 12 + x - 1];
-                rotate = rotations[y * 12 + x - 1];
-                direction = 1;
-            }
-            let orientation0 = (rotate + direction)%8;
-            if !connects.contains_key(&(image0, orientation0)) {
-                break;
-            }
-            let (image1, orientation1) = connects[&(image0, orientation0)];
-            println!(
-                "({},{}) {:?} -> {:?}",
-                y,
-                x,
-                (image0, orientation0),
-                (image1, orientation1)
-            );
-            let next_rotate = (rotate + 8 - orientation0
-                + orientation1
-                + match (orientation0, orientation1) {
-                    (0,5) => 2,
-                    (1,3) => 4,
-                    (1,4) => 4,
-                    (1,6) => 4,
-                    (2,0) => 4,
-                    (2,5) => 6,
-                    (7,5) => 4,
-                    (7,1) => 4,
-                    //(1,4) => 4,
-                    _ => {
-                        print_tile(&tiles, image1, rotate);
-                        print_tile(&tiles, image1, (2+rotate)%8);
-                        panic!("unknown pattern: {:?}", (orientation0, orientation1))
-                    },
-                })
-                % 8;
-            print_tile(&tiles, image1, next_rotate);
-            image.push(image1.to_owned());
-            rotations.push(next_rotate);
-        }
-        if image.len() == 28 {
-            break;
-        }
-    }
-    //println!("{:?}", image);
-    //println!("{:?}", rotations);
-    //print_all_tiles(&tiles,&image,&rotations);
-    panic!("done");
-    // create bitmap
-    let mut bitmap = vec![0 as i128; 96];
-    for y in 0..12 {
-        for x in 0..12 {
-            let tile = image[y * 12 + x];
-            let rotation = rotations[y * 12 + x];
-            let numbers = tiles[&tile][rotation].to_owned();
-            for l in 0..8 {
-                let number = numbers[1+l] as i128;
-                let bits = (number >> 1) & 0b11111111;
-                bitmap[y * 8 + l] |= bits << (11 - x) * 8;
+    
+    // create all orientations of bitmap
+    let mut bitmaps = vec![];
+    
+    // normal, 90, 180, 270
+    for _ in 0..4 {
+        bitmaps.push(bitmap.clone());
+        let mut rotated = vec![0u128; bitmap_size];
+        for i in 0..bitmap_size {
+            for j in 0..bitmap_size {
+                let bit = (bitmap[i] >> j) & 1;
+                rotated[j] |= bit << (bitmap_size - 1 - i);
             }
         }
+        bitmap = rotated;
     }
-    //print_bitmap(&bitmaps[0]);
-    // create bitmaps
-    let mut bitmap_lines = vec![];
-    for n in bitmap.clone() {
-        let s = format!("{:#098b}", n);
-        bitmap_lines.push(s[2..].replace("0", ".").replace("1", "#"));
+    
+    // flip and repeat
+    bitmap = bitmaps[0].iter().rev().copied().collect();
+    for _ in 0..4 {
+        bitmaps.push(bitmap.clone());
+        let mut rotated = vec![0u128; bitmap_size];
+        for i in 0..bitmap_size {
+            for j in 0..bitmap_size {
+                let bit = (bitmap[i] >> j) & 1;
+                rotated[j] |= bit << (bitmap_size - 1 - i);
+            }
+        }
+        bitmap = rotated;
     }
-    let bitmaps = image_lines_to_rotated_images(bitmap_lines);
-    // define sea monster
+    
+    // define sea monster pattern
     let monster = vec![
-        0b00000000000000000010, // ..................#.
-        0b10000110000110000111, // #....##....##....###
-        0b01001001001001001000, // .#..#..#..#..#..#...
+        0b00000000000000000010u32,
+        0b10000110000110000111u32,
+        0b01001001001001001000u32,
     ];
+    
     // find monsters
-    let mut result = 0;
-    for bitmap in bitmaps {
+    let mut max_monsters = 0;
+    for bitmap in &bitmaps {
         let mut matches = 0;
-        for y in 0..96-3 {
-            for x in 0..96-20 {
-                let mut lines = 0;
-                for l in 0..3 {
-                    let number = monster[l] << (95-x);
-                    if bitmap[y+l] & number == number {
-                        lines+=1;
+        for y in 0..bitmap_size - 2 {
+            for x in 0..bitmap_size - 20 {
+                let mut found = true;
+                for (dy, pattern) in monster.iter().enumerate() {
+                    let shifted = (*pattern as u128) << x;
+                    if bitmap[y + dy] & shifted != shifted {
+                        found = false;
+                        break;
                     }
                 }
-                if lines == 3 {
-                    matches+=1;
+                if found {
+                    matches += 1;
                 }
             }
         }
-        if matches>result {
-            result = matches;
+        if matches > max_monsters {
+            max_monsters = matches;
         }
     }
-    // find roughness
-    let mut ones = 0;
-    for n in bitmap {
-        let s = format!("{:#098b}",n);
-        for c in s.to_string().chars() {
-            if c=='1' {
-                ones+=1;
-            }
-        }
+    
+    // count total hash marks
+    let mut total = 0;
+    for row in &bitmaps[0] {
+        total += row.count_ones() as usize;
     }
-    println!("{}", ones - result*15);
-    println!("{}", result);
-    // not 2556 //  your answer is too high
+    
+    println!("{}", total - max_monsters * 15);
 }
